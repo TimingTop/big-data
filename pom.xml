@@ -12,6 +12,10 @@
         <module>spark-customer</module>
         <module>big-data-core</module>
         <module>spark-user-visit</module>
+        <module>hbase-demo</module>
+        <module>flink-demo</module>
+        <module>flink-portrait</module>
+        <module>component-demo</module>
     </modules>
     <packaging>pom</packaging>
 

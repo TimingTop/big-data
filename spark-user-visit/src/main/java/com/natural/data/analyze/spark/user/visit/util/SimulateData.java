@@ -1,12 +1,8 @@
 package com.natural.data.analyze.spark.user.visit.util;
 
-
 import com.natural.data.analyze.core.util.DateUtils;
 import com.natural.data.analyze.core.util.StringUtils;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
@@ -14,7 +10,7 @@ import java.util.*;
 
 public class SimulateData {
 
-    public static void simulation(SparkSession spark) {
+    public static void simulation(SQLContext spark) {
 
         List<Row> rows = new ArrayList<>();
 
@@ -93,9 +89,68 @@ public class SimulateData {
         ));
 
         Dataset<Row> userVisitSession = spark.createDataFrame(rows, schema);
-        // https://spark.apache.org/docs/latest/sql-getting-started.html
-        userVisitSession.createOrReplaceTempView("user");
 
+        // https://spark.apache.org/docs/latest/sql-getting-started.html
+        userVisitSession.createOrReplaceTempView("user_visit_action");
+//        userVisitSession.show(2);
+
+        /**
+         * ==========
+         */
+        rows.clear();
+
+        String[] sexes = new String[]{"male", "female"};
+        for(int i = 1; i < 100; i++){
+            long userid = i;
+            String username = "user" + i;
+            String name = "name" + i;
+            int age = random.nextInt(60);
+            String professional = "professional" + random.nextInt(100);
+            String city = "city" + random.nextInt(100);
+            String sex = sexes[random.nextInt(2)];
+
+            Row row = RowFactory.create(userid, username, name, age, professional, city, sex);
+            rows.add(row);
+        }
+
+        StructType schema2 = DataTypes.createStructType(Arrays.asList(
+                DataTypes.createStructField("user_id", DataTypes.LongType, true),
+                DataTypes.createStructField("username", DataTypes.StringType, true),
+                DataTypes.createStructField("name", DataTypes.StringType, true),
+                DataTypes.createStructField("age", DataTypes.IntegerType, true),
+                DataTypes.createStructField("professional", DataTypes.StringType, true),
+                DataTypes.createStructField("city", DataTypes.StringType, true),
+                DataTypes.createStructField("sex", DataTypes.StringType, true)
+        ));
+
+        Dataset<Row> userInfoDS = spark.createDataFrame(rows, schema2);
+        userInfoDS.createOrReplaceTempView("user_info");
+//        userInfoDS.show(2);
+
+        /*
+        ====================
+         */
+        rows.clear();
+
+        int[] productStatus = new int[]{0, 1};
+
+        for(int i = 0; i < 100; i++) {
+            long productId = i;
+            String productName = "product" + i;
+            String extendInfo = "{\"product_status\":" + productStatus[random.nextInt(2)] + "}";
+            Row row = RowFactory.create(productId, productName, extendInfo);
+            rows.add(row);
+        }
+
+        StructType schema3 = DataTypes.createStructType(Arrays.asList(
+                DataTypes.createStructField("product_id", DataTypes.LongType, true),
+                DataTypes.createStructField("product_name", DataTypes.StringType, true),
+                DataTypes.createStructField("extend_info", DataTypes.StringType, true)
+        ));
+
+        Dataset<Row> productInfoDS = spark.createDataFrame(rows, schema3);
+        productInfoDS.createOrReplaceTempView("product_info");
+//        productInfoDS.show(2);
 
     }
 }

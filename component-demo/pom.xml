@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>big-data-root</artifactId>
+        <groupId>com.natural.data.analyze</groupId>
+        <version>1.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>component-demo</artifactId>
+
+    <properties>
+        <pulsar.version>2.4.1</pulsar.version>
+    </properties>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.pulsar/pulsar-client -->
+        <dependency>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-client</artifactId>
+            <version>${pulsar.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.pulsar/pulsar-common -->
+        <dependency>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-common</artifactId>
+            <version>${pulsar.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.pulsar/pulsar-client-admin -->
+        <dependency>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-client-admin</artifactId>
+            <version>${pulsar.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.pulsar/pulsar-functions-api -->
+        <dependency>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-functions-api</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+
+
+
+
+    </dependencies>
+</project>

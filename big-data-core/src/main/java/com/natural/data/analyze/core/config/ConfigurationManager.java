@@ -2,16 +2,19 @@ package com.natural.data.analyze.core.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 public class ConfigurationManager {
-
-    private static Properties prop = new Properties();
+    private final static String CONFIG_NAME = "config.properties";
+    private static Properties prop;
 
     static {
+        prop = new Properties();
         try {
-            InputStream in = ConfigurationManager.class.getClassLoader().getResourceAsStream("config.properties");
-            prop.load(in);
+            InputStream in = ConfigurationManager.class.getClassLoader().getResourceAsStream(CONFIG_NAME);
+            InputStreamReader inputStreamReader = new InputStreamReader(in, "UTF-8");
+            prop.load(inputStreamReader);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -23,7 +26,6 @@ public class ConfigurationManager {
 
     public static Integer getInteger(String key) {
         String value = getProperty(key);
-
         try {
             return Integer.valueOf(value);
         } catch (NumberFormatException e) {
