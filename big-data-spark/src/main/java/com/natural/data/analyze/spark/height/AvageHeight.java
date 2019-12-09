@@ -16,7 +16,7 @@ public class AvageHeight {
         JavaSparkContext context = new JavaSparkContext(conf);
 
         JavaRDD<String> dataFile = context.textFile("C:\\personal\\big-data-root\\big-data-spark\\src\\main\\resources\\com\\natural\\data\\analyze\\spark\\height\\PeopleInfo.txt");
-
+        context.textFile("data/aaa.txt");
         JavaRDD<String> maleFilterData = dataFile.filter(new Function<String, Boolean>() {
             public Boolean call(String s) throws Exception {
                 return s.contains("M");

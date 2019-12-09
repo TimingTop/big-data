@@ -2,6 +2,7 @@ package com.natural.data.analyze.spark.user.visit.session;
 
 import com.natural.data.analyze.spark.user.visit.util.SimulateData;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -11,6 +12,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.util.LongAccumulator;
+import scala.Tuple2;
 
 import java.util.Arrays;
 
@@ -73,6 +75,16 @@ public class UserSessionMain {
 //        productResult.show(1);
 
         JavaRDD<Row> rowJavaRDD = productResult.javaRDD();
+
+
+        JavaRDD<String> text = sc.textFile("data/people.txt");
+        JavaPairRDD<String, Integer> count = text.flatMap(s -> Arrays.asList(s.split(" ")).iterator())
+                .mapToPair(word -> new Tuple2<>(word, 1))
+                .reduceByKey((a, b) -> a + b);
+
+        count.saveAsTextFile("data/result.txt");
+
+
 
 
     }
