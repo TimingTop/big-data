@@ -2,7 +2,10 @@ package com.natural.data.analyze.spark.user.visit.util;
 
 import com.natural.data.analyze.core.util.DateUtils;
 import com.natural.data.analyze.core.util.StringUtils;
-import org.apache.spark.sql.*;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.RowFactory;
+import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 

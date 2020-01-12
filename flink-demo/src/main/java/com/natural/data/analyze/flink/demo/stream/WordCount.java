@@ -1,4 +1,4 @@
-package com.natural.data.analyze.flink.demo;
+package com.natural.data.analyze.flink.demo.stream;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;

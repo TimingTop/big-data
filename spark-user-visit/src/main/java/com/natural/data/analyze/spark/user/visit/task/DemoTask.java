@@ -123,6 +123,7 @@ public class DemoTask {
         SparkSession sparkSession = SparkSession.builder().appName("simple application").getOrCreate();
         Dataset<String> logData = sparkSession.read().textFile(logFile).cache();
 
+
         logData.filter((FilterFunction<String>) s -> s.contains("a")).count();
 
         sparkSession.stop();
@@ -130,6 +131,8 @@ public class DemoTask {
 
     /*
        RDD  programming guide
+
+
      */
 
     public static void rddDemo() {
