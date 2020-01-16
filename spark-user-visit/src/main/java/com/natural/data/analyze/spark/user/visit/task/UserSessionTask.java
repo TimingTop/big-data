@@ -1,28 +1,25 @@
 package com.natural.data.analyze.spark.user.visit.task;
 
 import com.natural.data.analyze.spark.user.visit.constant.Constants;
+
 import com.natural.data.analyze.spark.user.visit.session.SessionAggrStatAccumulator;
+import com.natural.data.analyze.spark.user.visit.session.SortTop10Category;
 import com.natural.data.analyze.spark.user.visit.util.DateUtils;
 import com.natural.data.analyze.spark.user.visit.util.SimulateData;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.spark.SparkConf;
+import com.natural.data.analyze.spark.user.visit.util.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.storage.StorageLevel;
-import org.apache.spark.util.LongAccumulator;
 import scala.Tuple2;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+
 
 /**
  *
@@ -77,7 +74,7 @@ public class UserSessionTask {
 
 //        count.saveAsTextFile("data/result.txt");
 
-
+        // 创建 sparksession
         SparkSession spark = SparkSession
                 .builder()
                 .appName("testone")
@@ -108,7 +105,9 @@ public class UserSessionTask {
         Dataset<Row> productResult = spark.sql("select * from product_info");
 //        productResult.show(1);
 
-        JavaRDD<Row> actionRDD = productResult.javaRDD();
+        //  get use session
+        Dataset<Row> userSessionResult = spark.sql("select * from user_visit_action");
+        JavaRDD<Row> actionRDD = userSessionResult.javaRDD();
 
         // （session_id, Row）
         JavaPairRDD<String, Row> session2actionRDD = actionRDD.mapToPair(new PairFunction<Row, String, Row>() {
@@ -147,7 +146,7 @@ public class UserSessionTask {
                     String searchKeyword = row.getString(5);
                     Long clickCategoryId = row.getLong(6);
 
-                    if (StringUtils.isNotEmpty(searchKeyword)) {
+                    if (searchKeyword != null && "".equals(searchKeyword)) {
                         if (!searchKeywordsBuffer.toString().contains(searchKeyword)) {
                             searchKeywordsBuffer.append(searchKeyword + ",");
                         }
@@ -178,9 +177,9 @@ public class UserSessionTask {
 
                 }
 
-                String searchKeywords = com.natural.data.analyze.spark.user.visit.util.StringUtils
+                String searchKeywords = StringUtils
                         .trimComma(searchKeywordsBuffer.toString());
-                String clickCategoryIds = com.natural.data.analyze.spark.user.visit.util.StringUtils
+                String clickCategoryIds = StringUtils
                         .trimComma(clickCategoryIdsBuffer.toString());
 
                 long visitLength = (endTime.getTime() - startTime.getTime()) / 1000;
@@ -233,7 +232,7 @@ public class UserSessionTask {
                 return new Tuple2<>(sessionId, fullAggrInfo);
             }
         });
-
+        // 自定义统计
         SessionAggrStatAccumulator sessionAggrStatAccumulator = new SessionAggrStatAccumulator();
 
         spark.sparkContext().register(sessionAggrStatAccumulator, "sessionAggrStatAccumulator");
@@ -243,9 +242,9 @@ public class UserSessionTask {
             @Override
             public Boolean call(Tuple2<String, String> tuple) throws Exception {
                 String aggrInfo = tuple._2;
-                long visitLength = Long.valueOf(com.natural.data.analyze.spark.user.visit.util.StringUtils.getFieldFromConcatString(
+                long visitLength = Long.valueOf(StringUtils.getFieldFromConcatString(
                         aggrInfo, "\\|", Constants.FIELD_VISIT_LENGTH));
-                long stepLength = Long.valueOf(com.natural.data.analyze.spark.user.visit.util.StringUtils.getFieldFromConcatString(
+                long stepLength = Long.valueOf(StringUtils.getFieldFromConcatString(
                         aggrInfo, "\\|", Constants.FIELD_STEP_LENGTH));
 
                 sessionAggrStatAccumulator.add(Constants.SESSION_COUNT);
@@ -304,13 +303,16 @@ public class UserSessionTask {
         // 输出 每个 统计的数据
         String sessionStr = sessionAggrStatAccumulator.value();
 
-        long session_count = Long.valueOf(com.natural.data.analyze.spark.user.visit.util.StringUtils.getFieldFromConcatString(
+        long session_count = Long.valueOf(StringUtils.getFieldFromConcatString(
                 sessionStr, "\\|", Constants.SESSION_COUNT));
 
         System.out.println("session count : " + session_count);
 
 
+        // 选择 top N 点击商品
 
+
+        SortTop10Category.getTop10Category(filterSessionId2aggrInfoRDD, session2actionRDD);
 
 
 
