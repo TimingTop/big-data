@@ -17,6 +17,7 @@
         <module>flink-portrait</module>
         <module>component-demo</module>
         <module>spark-demo</module>
+        <module>hadoop-demo</module>
     </modules>
     <packaging>pom</packaging>
 

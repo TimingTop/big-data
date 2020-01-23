@@ -3,8 +3,10 @@ package com.natural.data.analyze.spark.user.visit.session;
 import com.natural.data.analyze.spark.user.visit.constant.Constants;
 import com.natural.data.analyze.spark.user.visit.util.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
@@ -59,8 +61,7 @@ public class SortTop10Session {
             top10CategoryList.add(new Tuple2<>(categoryId, categoryId));
         }
 
-
-
+        JavaRDD<Row> top10CategoryRowRDD = sparkSession.createDataFrame(top10CategoryList, Tuple2.class).toJavaRDD();
 
 
 

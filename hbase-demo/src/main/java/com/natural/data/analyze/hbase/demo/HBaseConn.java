@@ -15,7 +15,7 @@ public class HBaseConn {
     private HBaseConn() {
         if (configuration == null) {
             configuration = HBaseConfiguration.create();
-            configuration.set("hbase.zookeeper.quorum", "192.168.56.104:2181,192.168.56.105:218,192.168.56.106:2181");
+            configuration.set("hbase.zookeeper.quorum", "192.168.56.104:2181,192.168.56.105:2181,192.168.56.106:2181");
         }
     }
 

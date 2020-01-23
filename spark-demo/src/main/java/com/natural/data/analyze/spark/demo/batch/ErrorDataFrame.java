@@ -1,4 +1,4 @@
-package com.natural.data.analyze.spark.demo;
+package com.natural.data.analyze.spark.demo.batch;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -55,5 +55,14 @@ public class ErrorDataFrame {
         Dataset<Row> mysql = df.filter(col("line").like("%mysql%"));
 
         System.out.println(mysql.count());
+
+        // Rigister the  dataframe as a SQL temporary view
+        df.createOrReplaceTempView("error");
+
+
+        Dataset<Row> sqlDF = spark.sql("select * from error");
+        sqlDF.show(10);
+
+
     }
 }

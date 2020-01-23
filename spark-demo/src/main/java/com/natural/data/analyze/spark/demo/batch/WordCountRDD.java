@@ -1,4 +1,4 @@
-package com.natural.data.analyze.spark.demo;
+package com.natural.data.analyze.spark.demo.batch;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -13,6 +13,25 @@ import java.util.regex.Pattern;
 /**
  *
  * RDD   最原始的 数据结构
+ *
+ *
+ *
+ *       xx.txt                    ------  sc.textFile
+ *       (strs)                  ------ flatMap
+ *       (str)                  ------ mapToPair
+ *       (str, count)           ------- reduceByKey
+ *       (str, [count1, count2, count3])           (str, counts)
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  *
  *
  */
