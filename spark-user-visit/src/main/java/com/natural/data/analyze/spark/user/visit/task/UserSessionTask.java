@@ -107,7 +107,7 @@ public class UserSessionTask {
 
         //  get use session
         Dataset<Row> userSessionResult = spark.sql("select * from user_visit_action");
-        JavaRDD<Row> actionRDD = userSessionResult.javaRDD();
+        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
 
         // （session_id, Row）
         JavaPairRDD<String, Row> session2actionRDD = actionRDD.mapToPair(new PairFunction<Row, String, Row>() {
@@ -232,6 +232,9 @@ public class UserSessionTask {
                 return new Tuple2<>(sessionId, fullAggrInfo);
             }
         });
+
+
+
         // 自定义统计
         SessionAggrStatAccumulator sessionAggrStatAccumulator = new SessionAggrStatAccumulator();
 
