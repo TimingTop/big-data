@@ -107,6 +107,7 @@ public class UserSessionTask {
 
         //  get use session
         Dataset<Row> userSessionResult = spark.sql("select * from user_visit_action");
+//        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
         JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
 
         // （session_id, Row）
@@ -144,7 +145,11 @@ public class UserSessionTask {
                         useId = row.getLong(1);
                     }
                     String searchKeyword = row.getString(5);
-                    Long clickCategoryId = row.getLong(6);
+
+                    Long clickCategoryId = null;
+                    if (!row.isNullAt(6)) {
+                        clickCategoryId = row.getLong(6);
+                    }
 
                     if (searchKeyword != null && "".equals(searchKeyword)) {
                         if (!searchKeywordsBuffer.toString().contains(searchKeyword)) {
@@ -160,7 +165,7 @@ public class UserSessionTask {
 
                     Date actionTime = DateUtils.parseTime(row.getString(4));
 
-                    if (actionTime == null) {
+                    if (startTime == null) {
                         startTime = actionTime;
                     }
                     if (endTime == null) {
