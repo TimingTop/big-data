@@ -18,6 +18,8 @@ public class DateUtils {
             return TIME_FORMAT.parse(time);
         } catch (ParseException e) {
             e.printStackTrace();
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
         return null;
     }

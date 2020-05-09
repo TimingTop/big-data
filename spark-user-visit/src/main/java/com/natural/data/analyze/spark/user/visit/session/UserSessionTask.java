@@ -114,11 +114,16 @@ public class UserSessionTask {
 
         //  get use session
         Dataset<Row> userSessionResult = spark.sql("select * from user_visit_action");
+<<<<<<< HEAD:spark-user-visit/src/main/java/com/natural/data/analyze/spark/user/visit/session/UserSessionTask.java
 
 //        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
 
 //        userSessionResult.show(2);
         JavaRDD<Row> actionRDD = userSessionResult.javaRDD();
+=======
+//        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
+        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
+>>>>>>> 4283666a99034aaa8b0853a189d82779c9a2377a:spark-user-visit/src/main/java/com/natural/data/analyze/spark/user/visit/task/UserSessionTask.java
 
         // （session_id, Row）
         JavaPairRDD<String, Row> session2actionRDD = actionRDD.mapToPair(new PairFunction<Row, String, Row>() {
@@ -160,10 +165,15 @@ public class UserSessionTask {
                         useId = row.getLong(1);
                     }
                     String searchKeyword = row.getString(5);
+<<<<<<< HEAD:spark-user-visit/src/main/java/com/natural/data/analyze/spark/user/visit/session/UserSessionTask.java
                     // 这个会抛错误，因为有可能为null
 //                    String clickCategoryIdStr = row.getString(6);
                     Long clickCategoryId = null;
 
+=======
+
+                    Long clickCategoryId = null;
+>>>>>>> 4283666a99034aaa8b0853a189d82779c9a2377a:spark-user-visit/src/main/java/com/natural/data/analyze/spark/user/visit/task/UserSessionTask.java
                     if (!row.isNullAt(6)) {
                         clickCategoryId = row.getLong(6);
                     }
