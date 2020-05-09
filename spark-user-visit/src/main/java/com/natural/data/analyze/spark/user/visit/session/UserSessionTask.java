@@ -1,9 +1,6 @@
-package com.natural.data.analyze.spark.user.visit.task;
+package com.natural.data.analyze.spark.user.visit.session;
 
 import com.natural.data.analyze.spark.user.visit.constant.Constants;
-
-import com.natural.data.analyze.spark.user.visit.session.SessionAggrStatAccumulator;
-import com.natural.data.analyze.spark.user.visit.session.SortTop10Category;
 import com.natural.data.analyze.spark.user.visit.util.DateUtils;
 import com.natural.data.analyze.spark.user.visit.util.SimulateData;
 import com.natural.data.analyze.spark.user.visit.util.StringUtils;
@@ -19,6 +16,7 @@ import scala.Tuple2;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -74,12 +72,20 @@ public class UserSessionTask {
 
 //        count.saveAsTextFile("data/result.txt");
 
+
+
+        boolean isLocal = true;
+
+
+
         // 创建 sparksession
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("testone")
-                .master("local[2]")
-                .getOrCreate();
+
+        SparkSession.Builder builder = SparkSession.builder();
+        builder.appName("testone");
+        if (isLocal) {
+            builder.master("local[1]");
+        }
+        SparkSession spark = builder.getOrCreate();
 
         /*****************************************
          * 表结构
@@ -105,9 +111,14 @@ public class UserSessionTask {
         Dataset<Row> productResult = spark.sql("select * from product_info");
 //        productResult.show(1);
 
+
         //  get use session
         Dataset<Row> userSessionResult = spark.sql("select * from user_visit_action");
-        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
+
+//        JavaRDD<Row> actionRDD = userSessionResult.javaRDD().repartition(10);
+
+//        userSessionResult.show(2);
+        JavaRDD<Row> actionRDD = userSessionResult.javaRDD();
 
         // （session_id, Row）
         JavaPairRDD<String, Row> session2actionRDD = actionRDD.mapToPair(new PairFunction<Row, String, Row>() {
@@ -118,9 +129,11 @@ public class UserSessionTask {
         });
         // 持久化数据到 内存
         session2actionRDD.persist(StorageLevel.MEMORY_ONLY());
+        // 对用户行为分组
         // (session_id, [Row1, Row2, Row3])
         JavaPairRDD<String, Iterable<Row>> session2actionRDDS = session2actionRDD.groupByKey();
-
+//        System.out.println(session2actionRDDS.count());
+        // session 表 跟 user 表聚合，查出用户id
         JavaPairRDD<Long, String> userId2aggrInfoRDD = session2actionRDDS.mapToPair(new PairFunction<Tuple2<String, Iterable<Row>>, Long, String>() {
 
             @Override
@@ -140,11 +153,20 @@ public class UserSessionTask {
 
                 while (iterator.hasNext()) {
                     Row row = iterator.next();
+                    if (row == null) {
+                        continue;
+                    }
                     if (useId == null) {
                         useId = row.getLong(1);
                     }
                     String searchKeyword = row.getString(5);
-                    Long clickCategoryId = row.getLong(6);
+                    // 这个会抛错误，因为有可能为null
+//                    String clickCategoryIdStr = row.getString(6);
+                    Long clickCategoryId = null;
+
+                    if (!row.isNullAt(6)) {
+                        clickCategoryId = row.getLong(6);
+                    }
 
                     if (searchKeyword != null && "".equals(searchKeyword)) {
                         if (!searchKeywordsBuffer.toString().contains(searchKeyword)) {
@@ -160,19 +182,18 @@ public class UserSessionTask {
 
                     Date actionTime = DateUtils.parseTime(row.getString(4));
 
-                    if (actionTime == null) {
+                    if (startTime == null) {
                         startTime = actionTime;
                     }
                     if (endTime == null) {
                         endTime = actionTime;
                     }
-                    if (actionTime.before(startTime)) {
+                    if (startTime != null && actionTime !=null && actionTime.before(startTime)) {
                         startTime = actionTime;
                     }
-                    if (actionTime.after(endTime)) {
+                    if (endTime != null && actionTime != null && actionTime.after(endTime)) {
                         endTime = actionTime;
                     }
-
                     stepLength++;
 
                 }
@@ -195,8 +216,12 @@ public class UserSessionTask {
             }
         });
 
+//        System.out.println(userId2aggrInfoRDD.count());
         //    =================   查 用户
         JavaRDD<Row> userInfoRDD = spark.sql("select * from user_info").javaRDD();
+
+//        Dataset<Row> sql = spark.sql("select * from user_info");
+//        sql.show(2);
         JavaPairRDD<Long, Row> userId2InfoRDD = userInfoRDD.mapToPair(new PairFunction<Row, Long, Row>() {
             @Override
             public Tuple2<Long, Row> call(Row row) throws Exception {
@@ -206,6 +231,7 @@ public class UserSessionTask {
         // ========================= end
 
         JavaPairRDD<Long, Tuple2<String, Row>> userId2fullInfoRDD = userId2aggrInfoRDD.join(userId2InfoRDD);
+//        System.out.println(userId2aggrInfoRDD.count());
         // (sessionId, fullInfoRow)
         JavaPairRDD<String, String> sessionId2fullAggrInfoRDD = userId2fullInfoRDD.mapToPair(new PairFunction<Tuple2<Long, Tuple2<String, Row>>, String, String>() {
 
@@ -214,7 +240,7 @@ public class UserSessionTask {
                 String aggrInfo = tuple._2._1;
                 Row userInfoRow = tuple._2._2;
 
-                String sessionId = com.natural.data.analyze.spark.user.visit.util.StringUtils
+                String sessionId = StringUtils
                         .getFieldFromConcatString(aggrInfo, "\\|", Constants.FIELD_SESSION_ID);
 
                 int age = userInfoRow.getInt(3);
@@ -233,18 +259,28 @@ public class UserSessionTask {
             }
         });
 
+        long count = sessionId2fullAggrInfoRDD.count();
+        System.out.println("count: " + count);
 
-
+        sessionId2fullAggrInfoRDD.take(10).forEach(
+                (x) -> {
+                    System.out.println(x._1 + ":" + x._2);
+                }
+        );
         // 自定义统计
         SessionAggrStatAccumulator sessionAggrStatAccumulator = new SessionAggrStatAccumulator();
 
         spark.sparkContext().register(sessionAggrStatAccumulator, "sessionAggrStatAccumulator");
+
+
+
 
         // 过滤一部分的数据，然后还要统计一下，需要用到的 session 数据
         JavaPairRDD<String, String> filterSessionId2aggrInfoRDD = sessionId2fullAggrInfoRDD.filter(new Function<Tuple2<String, String>, Boolean>() {
             @Override
             public Boolean call(Tuple2<String, String> tuple) throws Exception {
                 String aggrInfo = tuple._2;
+
                 long visitLength = Long.valueOf(StringUtils.getFieldFromConcatString(
                         aggrInfo, "\\|", Constants.FIELD_VISIT_LENGTH));
                 long stepLength = Long.valueOf(StringUtils.getFieldFromConcatString(
@@ -301,21 +337,56 @@ public class UserSessionTask {
 
         });
 
+//
+
         filterSessionId2aggrInfoRDD.persist(StorageLevel.MEMORY_ONLY());
 
+//        filterSessionId2aggrInfoRDD.take(10).forEach(
+//                (x) -> {
+//                    System.out.println(x._1 + ":" + x._2);
+//                }
+//        );
+//        long count1 = filterSessionId2aggrInfoRDD.count();
+//        System.out.println(count1);
+
         // 输出 每个 统计的数据
-        String sessionStr = sessionAggrStatAccumulator.value();
+//        String sessionStr = sessionAggrStatAccumulator.value();
+//        System.out.println(sessionStr);
+//        long session_count = Long.valueOf(StringUtils.getFieldFromConcatString(
+//                sessionStr, "\\|", Constants.SESSION_COUNT));
+//
+//        System.out.println("session count : " + session_count);
 
-        long session_count = Long.valueOf(StringUtils.getFieldFromConcatString(
-                sessionStr, "\\|", Constants.SESSION_COUNT));
+        // ########################## 计算每天每小时的session 数 ##################################
+        // <sessionId, [x|y|z]>    ==>   <yyyy-MM-dd_HH, sessionId>
+        //  <839efd8408214987b128507ec7603717 ,
+        //  sessionid=839efd8408214987b128507ec7603717|searchKeywords=|clickCategoryIds=43|visitLength=66996|stepLength=10|startTime=2020-05-07 04:02:07|age=28|professional=professional64|city=city89|sex=female>
+        JavaPairRDD<String, String> time2SessionRDD = sessionId2fullAggrInfoRDD.mapToPair(new PairFunction<Tuple2<String, String>, String, String>() {
+            @Override
+            public Tuple2<String, String> call(Tuple2<String, String> tuple2) throws Exception {
+                String aggrInfo = tuple2._2;
+                String startTime = StringUtils.getFieldFromConcatString(aggrInfo,
+                        "\\|", Constants.FIELD_START_TIME);
 
-        System.out.println("session count : " + session_count);
+                String dateHour = DateUtils.getDateHour(startTime);
+                return new Tuple2<>(dateHour, aggrInfo);
+            }
+        });
+
+        // 每天每小时 session 数
+        Map<String, Long> countMap = time2SessionRDD.countByKey();
+
+        countMap.forEach(
+                (x, y) -> {
+                    System.out.println(x + ":" + y);
+                }
+        );
 
 
         // 选择 top N 点击商品
 
 
-        SortTop10Category.getTop10Category(filterSessionId2aggrInfoRDD, session2actionRDD);
+//        SortTop10Category.getTop10Category(filterSessionId2aggrInfoRDD, session2actionRDD);
 
 
 

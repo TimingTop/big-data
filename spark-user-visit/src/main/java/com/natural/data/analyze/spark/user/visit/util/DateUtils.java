@@ -22,6 +22,19 @@ public class DateUtils {
         return null;
     }
 
+    /**
+     *
+     * @param datetime    2020-05-07 04:02:07   yyyy-MM-dd HH:mm:ss
+     * @return            2020-05-07_04
+     */
+    public static String getDateHour(String datetime) {
+        String[] d = datetime.split(" ");
+        String date = d[0];
+        String hourMinuteSecond = d[1];
+        String hour = hourMinuteSecond.split(":")[0];
+        return date + "_" + hour;
+    }
+
     public static String formatTime(Date date) {
         return TIME_FORMAT.format(date);
     }

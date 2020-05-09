@@ -32,3 +32,9 @@
  1 product_name
  2 extend_info
 
+ =============== city_info ================
+ 0 city_id
+ 1 city_name
+ 2 area
+
+
