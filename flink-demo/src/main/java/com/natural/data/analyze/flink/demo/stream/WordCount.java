@@ -25,6 +25,7 @@ public class WordCount {
         socketTextStream.setParallelism(1);
 
 
+
         DataStream<WordWithCount> word = socketTextStream.flatMap(new FlatMapFunction<String, WordWithCount>() {
             @Override
             public void flatMap(String s, Collector<WordWithCount> collector) throws Exception {
@@ -43,6 +44,10 @@ public class WordCount {
                 });
 
         word.print().setParallelism(1);
+
+
+
+//        word.addSink()
 
         env.execute("Socket window wordcount");
     }
