@@ -21,7 +21,8 @@ public class BaijiaTask {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         DataStreamSource<String> text = env.socketTextStream("localhost", 9990);
-        
+
+
         text.map(new MapFunction<String, BaiJiaInfo>() {
             @Override
             public BaiJiaInfo map(String s) throws Exception {
@@ -52,7 +53,7 @@ public class BaijiaTask {
 
                 return baiJiaInfo;
             }
-        })
+        });
         
     }
 }

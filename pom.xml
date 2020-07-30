@@ -18,6 +18,7 @@
         <module>component-demo</module>
         <module>spark-demo</module>
         <module>hadoop-demo</module>
+        <module>elastic-demo</module>
     </modules>
     <packaging>pom</packaging>
 
