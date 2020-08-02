@@ -24,6 +24,8 @@ public class BrandLikeTask {
 
         DataStreamSource<String> input = see.socketTextStream("localhost", 9999);
 
+        // input format:
+        //
         SingleOutputStreamOperator<BrandLike> brandLikeMap = input.flatMap(new BrandLikeMap());
 
         DataStream<BrandLike> brandLikeReduce = brandLikeMap.keyBy("groupByField")

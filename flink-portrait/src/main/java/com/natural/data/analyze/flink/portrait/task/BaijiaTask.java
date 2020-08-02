@@ -10,8 +10,14 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 
+/**
+ *
+ *
+ *
+ *
+ */
 
-// id,productid,
+
 public class BaijiaTask {
     public static void main(String[] args) {
 
@@ -22,6 +28,12 @@ public class BaijiaTask {
 
         DataStreamSource<String> text = env.socketTextStream("localhost", 9990);
 
+        /**
+         *
+         * 数据源：  1. socket  2. kafka 3. 文件log
+         *
+         *
+         */
 
         text.map(new MapFunction<String, BaiJiaInfo>() {
             @Override
