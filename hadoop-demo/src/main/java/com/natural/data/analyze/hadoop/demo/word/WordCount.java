@@ -102,6 +102,8 @@ public class WordCount {
         }
     }
 
+
+    // resourcemanager
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         GenericOptionsParser optionParser = new GenericOptionsParser(conf, args);
@@ -110,7 +112,7 @@ public class WordCount {
             System.err.println("Usage: wordcount <in> <out> [-skip skipPatternFile]");
             System.exit(2);
         }
-        Job job = Job.getInstance(conf, "word count");
+        Job job = Job.getInstance(conf, "wordcount");
         job.setJarByClass(WordCount.class);
         job.setMapperClass(TokenizerMapper.class);
         job.setCombinerClass(IntSumReducer.class);

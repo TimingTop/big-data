@@ -17,7 +17,7 @@ public class UserPortraitTask {
 
         DataStreamSource<String> dataStream = null;
 
-        dataStream.map()
+//        dataStream.map()
 
     }
 }

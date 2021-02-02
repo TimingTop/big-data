@@ -133,6 +133,29 @@ public class BuyingIndexTask {
                 // 计算平均值
                 double avrAmount = sum / list.size();
 
+                int totalDays = 0;
+
+                for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
+                    Integer frequencyDays = entry.getKey();
+                    Integer count = entry.getValue();
+                    totalDays += frequencyDays * count;
+                }
+
+                // 平均天数，就是 平均多少天 会购物一次
+                int avrDays = totalDays / list.size();
+
+                // 购物指数
+                // 支付金额平均值 * 0.3
+                // 最大支付金额 * 0.3
+                // 下单频率 * 0.4
+
+
+                int avrAmountScore = 0;
+                if (avrAmount >= 0 && avrAmount < 20) {
+                    avrAmountScore = 5;
+                } else if (avrAmount >= 20 && avrAmount < 20) {
+                    avrAmountScore = 10;
+                }
 
 
             }

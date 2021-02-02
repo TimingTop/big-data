@@ -12,8 +12,9 @@ public class BrandLikeSink implements SinkFunction<BrandLike> {
         String brand = value.getBrand();
         long count = value.getCount();
 
-
-
+        // 存进  mongo db 中
+        System.out.println("info=" + brand);
+        System.out.println("count=" + count);
 
     }
 }

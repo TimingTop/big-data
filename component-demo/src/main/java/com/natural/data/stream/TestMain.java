@@ -4,7 +4,7 @@ public class TestMain {
 
     public static void main(String[] args) {
 
-        new MyStream(null)
+        new MyStream(true, false)
                 .lazy(() -> {System.out.println("A");})
                 .lazy(() -> {System.out.println("b");})
                 .lazy(() -> {System.out.println("c");})

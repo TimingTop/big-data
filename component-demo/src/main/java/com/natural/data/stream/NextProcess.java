@@ -13,4 +13,6 @@ public class NextProcess {
     public MyStream eval() {
         return evalFunction.apply();
     }
+
+
 }

@@ -6,6 +6,6 @@ public class UserPortraitMapFunction implements MapFunction<String, String> {
 
     @Override
     public String map(String s) throws Exception {
-
+        return null;
     }
 }

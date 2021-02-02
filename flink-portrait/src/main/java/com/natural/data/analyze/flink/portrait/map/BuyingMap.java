@@ -38,7 +38,7 @@ public class BuyingMap implements MapFunction<String, BuyingInfo> {
         buyingInfo.setPayStatus(payStatus);
         buyingInfo.setCouponAmount(couponAmount);
         buyingInfo.setTotalAmount(totalAmount);
-        String groupField = "buyinginfo==" + userId;
+        String groupField = "==buyinginfo==" + userId;
         buyingInfo.setGroupField(groupField);
         List<BuyingInfo> list = new ArrayList<>();
         list.add(buyingInfo);

@@ -5,9 +5,15 @@ public class MyStream {
     private NextProcess next;
 
     boolean isEnd;
+    boolean isStart;
 
     public MyStream(NextProcess next) {
         this.next = next;
+    }
+
+    public MyStream(boolean start, boolean end) {
+        this.isStart = start;
+        this.isEnd = end;
     }
 
     public void setEnd(boolean end) {
@@ -20,6 +26,19 @@ public class MyStream {
     }
 
     public MyStream lazy(SayFunction say) {
+        if (this.isStart) {
+
+            this.next = new NextProcess(
+                    new EvalFunction() {
+                        @Override
+                        public MyStream apply() {
+                            return null;
+                        }
+                    }
+            );
+
+            return new MyStream(this.next);
+        }
         NextProcess last = this.next;
         this.next = new NextProcess(
                 new EvalFunction() {
@@ -56,6 +75,7 @@ public class MyStream {
     }
 
     public void now(SayFunction say) {
+        this.isEnd = true;
         now(say, this.result());
     }
 
